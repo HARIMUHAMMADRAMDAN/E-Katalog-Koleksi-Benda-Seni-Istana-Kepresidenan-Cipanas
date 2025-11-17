@@ -105,8 +105,9 @@ body::before {
   transform: translateY(-50%) scale(1.1);
 }
 
-.prev { left: calc(50% - 48vw); } 
-.next { right: calc(50% - 48vw); }
+/* Tombol desktop lebih dekat ke frame */
+.prev { left: calc(50% - 40vw); }
+.next { right: calc(50% - 40vw); }
 
 .page-number {
   position: absolute;
@@ -206,11 +207,13 @@ let isAnimating = false;
 const pageNumber = document.getElementById('pageNumber');
 const pageInput = document.getElementById('pageInput');
 
+// Update nomor halaman
 function updatePageNumber() {
   pageNumber.textContent = `Hal ${currentPage} / ${totalPages}`;
   pageInput.value = currentPage;
 }
 
+// Preload gambar
 function preloadImage(index) {
   if(index > 0 && index <= totalPages){
     const img = new Image();
@@ -218,14 +221,14 @@ function preloadImage(index) {
   }
 }
 
-// preload ±3 halaman untuk lancar
+// Preload ±3 halaman untuk lancar
 function preloadAround(index){
   for(let i=-3; i<=3; i++){
     if(i!==0) preloadImage(index+i);
   }
 }
 
-// buat halaman awal
+// Halaman awal
 let currentImg = document.createElement('div');
 currentImg.className = 'page active';
 currentImg.style.willChange = 'transform';
@@ -234,6 +237,7 @@ currentImg.innerHTML = `<img src="iscip${currentPage}.jpg" alt="Halaman ${curren
 container.appendChild(currentImg);
 preloadAround(currentPage);
 
+// Show page dengan animasi
 function showPage(index){
   if(index < 1 || index > totalPages || index === currentPage || isAnimating) return;
   isAnimating = true;
@@ -274,15 +278,16 @@ function showPage(index){
   currentImg.addEventListener('animationend', finishAnimation, {once:true});
 }
 
+// Navigasi
 function nextPage(){ if(currentPage<totalPages) showPage(currentPage+1); }
 function prevPage(){ if(currentPage>1) showPage(currentPage-1); }
-
 function goToPage(){
   const page = parseInt(pageInput.value);
   if(!isNaN(page) && page>=1 && page<=totalPages) showPage(page);
   else { alert(`Masukkan nomor antara 1 dan ${totalPages}`); pageInput.value = currentPage; }
 }
 
+// Keyboard
 document.addEventListener('keydown', (e)=>{
   if(document.activeElement !== pageInput && !isAnimating){
     if(e.key==='ArrowRight') nextPage();
@@ -290,10 +295,10 @@ document.addEventListener('keydown', (e)=>{
   } else if(e.key==='Enter') goToPage();
 });
 
-// SWIPE MOBILE
-let touchStartX = 0, touchEndX = 0;
-container.addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].screenX; });
-container.addEventListener('touchend', (e)=>{
+// Swipe mobile
+let touchStartX=0, touchEndX=0;
+container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+container.addEventListener('touchend', e => {
   touchEndX = e.changedTouches[0].screenX;
   const diff = touchEndX - touchStartX;
   if(Math.abs(diff) > 50){
