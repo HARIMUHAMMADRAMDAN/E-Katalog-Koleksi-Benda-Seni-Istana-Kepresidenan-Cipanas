@@ -57,7 +57,7 @@ body::before {
   position: absolute;
   backface-visibility: hidden;
   transform-origin: left center;
-  transition: transform 0.8s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 1.5s cubic-bezier(0.4,0,0.2,1);
   box-shadow: 0 0 15px rgba(0,0,0,0.15);
   will-change: transform;
 }
@@ -71,8 +71,8 @@ body::before {
   object-fit: contain;
 }
 
-.page.flip-next { z-index: 3; animation: flipNext 0.8s forwards; }
-.page.flip-prev { z-index: 3; animation: flipPrev 0.8s forwards; }
+.page.flip-next { z-index: 3; animation: flipNext 1.5s forwards; }
+.page.flip-prev { z-index: 3; animation: flipPrev 1.5s forwards; }
 
 @keyframes flipNext {
   0% { transform: rotateY(0deg); opacity: 1; }
@@ -207,13 +207,11 @@ let isAnimating = false;
 const pageNumber = document.getElementById('pageNumber');
 const pageInput = document.getElementById('pageInput');
 
-// Update nomor halaman
 function updatePageNumber() {
   pageNumber.textContent = `Hal ${currentPage} / ${totalPages}`;
   pageInput.value = currentPage;
 }
 
-// Preload gambar
 function preloadImage(index) {
   if(index > 0 && index <= totalPages){
     const img = new Image();
@@ -221,9 +219,8 @@ function preloadImage(index) {
   }
 }
 
-// Preload ±3 halaman untuk lancar
 function preloadAround(index){
-  for(let i=-3; i<=3; i++){
+  for(let i=-3;i<=3;i++){
     if(i!==0) preloadImage(index+i);
   }
 }
@@ -239,70 +236,66 @@ preloadAround(currentPage);
 
 // Show page dengan animasi
 function showPage(index){
-  if(index < 1 || index > totalPages || index === currentPage || isAnimating) return;
+  if(index<1||index>totalPages||index===currentPage||isAnimating) return;
   isAnimating = true;
 
-  // hapus shadow sementara agar GPU lebih ringan
-  container.style.boxShadow = 'none';
+  container.style.boxShadow='none';
 
-  const direction = index > currentPage ? 'next' : 'prev';
-  const newPage = document.createElement('div');
-  newPage.className = 'page';
-  newPage.style.willChange = 'transform';
-  newPage.style.transform = 'translateZ(0)';
-  newPage.innerHTML = `<img src="iscip${index}.jpg" alt="Halaman ${index}">`;
+  const direction = index>currentPage?'next':'prev';
+  const newPage=document.createElement('div');
+  newPage.className='page';
+  newPage.style.willChange='transform';
+  newPage.style.transform='translateZ(0)';
+  newPage.innerHTML=`<img src="iscip${index}.jpg" alt="Halaman ${index}">`;
   container.appendChild(newPage);
 
-  requestAnimationFrame(() => {
+  requestAnimationFrame(()=>{
     if(direction==='next') currentImg.classList.add('flip-next');
     else newPage.classList.add('flip-prev');
   });
 
-  const fallbackTimeout = setTimeout(finishAnimation, 850);
+  const fallbackTimeout = setTimeout(finishAnimation,1550);
 
   function finishAnimation(){
     clearTimeout(fallbackTimeout);
     currentImg.remove();
     newPage.classList.remove('flip-next','flip-prev');
     newPage.classList.add('active');
-    currentImg = newPage;
-    currentPage = index;
+    currentImg=newPage;
+    currentPage=index;
     updatePageNumber();
-    isAnimating = false;
+    isAnimating=false;
     preloadAround(currentPage);
-
-    // kembalikan shadow
-    container.style.boxShadow = '0 8px 18px rgba(0,0,0,0.4)';
+    container.style.boxShadow='0 8px 18px rgba(0,0,0,0.4)';
   }
 
-  currentImg.addEventListener('animationend', finishAnimation, {once:true});
+  currentImg.addEventListener('animationend',finishAnimation,{once:true});
 }
 
-// Navigasi
 function nextPage(){ if(currentPage<totalPages) showPage(currentPage+1); }
 function prevPage(){ if(currentPage>1) showPage(currentPage-1); }
 function goToPage(){
-  const page = parseInt(pageInput.value);
-  if(!isNaN(page) && page>=1 && page<=totalPages) showPage(page);
-  else { alert(`Masukkan nomor antara 1 dan ${totalPages}`); pageInput.value = currentPage; }
+  const page=parseInt(pageInput.value);
+  if(!isNaN(page)&&page>=1&&page<=totalPages) showPage(page);
+  else { alert(`Masukkan nomor antara 1 dan ${totalPages}`); pageInput.value=currentPage; }
 }
 
 // Keyboard
-document.addEventListener('keydown', (e)=>{
-  if(document.activeElement !== pageInput && !isAnimating){
+document.addEventListener('keydown',(e)=>{
+  if(document.activeElement!==pageInput&&!isAnimating){
     if(e.key==='ArrowRight') nextPage();
     else if(e.key==='ArrowLeft') prevPage();
   } else if(e.key==='Enter') goToPage();
 });
 
 // Swipe mobile
-let touchStartX=0, touchEndX=0;
-container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-container.addEventListener('touchend', e => {
-  touchEndX = e.changedTouches[0].screenX;
-  const diff = touchEndX - touchStartX;
-  if(Math.abs(diff) > 50){
-    if(diff < 0) nextPage();
+let touchStartX=0,touchEndX=0;
+container.addEventListener('touchstart',e=>{ touchStartX=e.changedTouches[0].screenX; });
+container.addEventListener('touchend',e=>{
+  touchEndX=e.changedTouches[0].screenX;
+  const diff=touchEndX-touchStartX;
+  if(Math.abs(diff)>50){
+    if(diff<0) nextPage();
     else prevPage();
   }
 });
